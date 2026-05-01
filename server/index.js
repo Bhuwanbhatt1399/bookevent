@@ -6,22 +6,14 @@ import mongoose from 'mongoose';
 import authroutes from './routes/auth.js';
 import eventroutes from './routes/events.js';
 import bookingroutes from './routes/booking.js';
-import path from "path";
-import cors from 'cors'; 
-
-  // hello how are you doing the    
 
 
 dotenv.config();
 
 const app = express();
 
-/* ================= MIDDLEWARE ================= */
-
 app.use(express.json());
 app.use('/uploads', express.static('uploads'));
-
-
 
 app.use(cors({
   origin: "https://bookevent-three.vercel.app",
