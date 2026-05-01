@@ -58,7 +58,7 @@ const EventDetail: React.FC = () => {
 
       try {
 
-        const { data } = await api.get<EventType>(`/events/${id}`);
+        const { data } = await api.get<EventType>(`/api/events/${id}`);
 
         setEvent(data);
 
@@ -156,7 +156,7 @@ const EventDetail: React.FC = () => {
       {event.image ? (
 
         <img
-          src={`http://localhost:5000${event.image}`}
+          src={`https://bookevent-backend.onrender.com${event.image}`}
           alt={event.title}
           className="w-full h-80 object-cover"
         />

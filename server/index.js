@@ -16,8 +16,8 @@ app.use(express.json());
 app.use('/uploads', express.static('uploads'));
 
 app.use(cors({
-   origin: "*",
-  // credentials: true
+  origin: "https://bookevent-three.vercel.app",
+  credentials: true
 }));
 
 
