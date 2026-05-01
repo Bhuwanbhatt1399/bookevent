@@ -7,6 +7,7 @@ import authroutes from './routes/auth.js';
 import eventroutes from './routes/events.js';
 import bookingroutes from './routes/booking.js';
 import path from "path";
+import cors from 'cors'; 
 
   // hello how are you doing the    
 
@@ -19,7 +20,7 @@ const app = express();
 
 app.use(express.json());
 app.use('/uploads', express.static('uploads'));
-import cors from "cors";
+
 
 
 app.use(cors({
