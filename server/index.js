@@ -44,7 +44,7 @@ app.use('/api/booking', bookingroutes);
 
 /* ================= DATABASE ================= */
 
-mongoose.connect(process.env.MONGODB_URL)
+mongoose.connect(process.env.MONGO_URI)
 
 .then(() => {
 
