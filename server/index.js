@@ -21,8 +21,10 @@ app.use(express.json());
 app.use('/uploads', express.static('uploads'));
 import cors from "cors";
 
+
 app.use(cors({
-  origin: "*"
+  origin: "https://bookevent-three.vercel.app",
+  credentials: true
 }));
 
 
