@@ -19,7 +19,11 @@ const app = express();
 
 app.use(express.json());
 app.use('/uploads', express.static('uploads'));
-app.use(cors());
+import cors from "cors";
+
+app.use(cors({
+  origin: "*"
+}));
 
 
 /*  VERY IMPORTANT — uploads static folder */
