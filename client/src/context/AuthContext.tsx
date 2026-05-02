@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 import type { User } from "../types/user";
 import api from "../utils/axios";
 
-
+    
 
 // Context type
  export interface AuthContextType {
@@ -43,6 +43,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
             const parsedUser: User = JSON.parse(storedUser);
             setUser(parsedUser);
+            
         }
         setLoading(false);
     }, []);

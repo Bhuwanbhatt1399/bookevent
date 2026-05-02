@@ -38,11 +38,27 @@ export const registerUser = async (req, res) => {
         console.log(`otp for ${email}: ${otpCode}`)
 
         // save OTP in database
-        await OTP.create({ email, Otp: otpCode, action: 'account_verification' })
+        // delete old OTP first
+        await OTP.deleteMany({
+            email,
+            action: 'account_verification'
+        });
+
+        // save new OTP
+        await OTP.create({
+            email,
+            Otp: otpCode,
+            action: 'account_verification'
+        });
 
         // send OTP email
-        await sendOtpEmail(email, otpCode, 'account_verification')
-
+        try {
+            await sendOtpEmail(email, otpCode, 'account_verification');
+        } catch (emailError) {
+            console.error("Email service error:", emailError);
+            return res.status(500).json({ message: "User registered, but failed to send verification email." });
+        }
+        console.log("OTP:", otpCode)
         //  create user
         const user = await User.create({
             name,
@@ -59,6 +75,7 @@ export const registerUser = async (req, res) => {
         })
 
     } catch (error) {
+        console.error("REGISTER ERROR:", error)
         res.status(500).json({ error: error.message })
     }
 }
@@ -82,8 +99,19 @@ export const loginUser = async (req, res) => {
         }
         if (!user.isVerified && user.role === 'user') {
             const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-            await OTP.deleteMany({ email, action: 'account_verification' })// remove old otp    
-            await OTP.create({ email, Otp: otpCode, action: 'account_verification' });
+            // await OTP.deleteMany({ email, action: 'account_verification' })// remove old otp    
+            // delete old OTP first
+            await OTP.deleteMany({
+                email,
+                action: 'account_verification'
+            });
+
+            // save new OTP
+            await OTP.create({
+                email,
+                Otp: otpCode,
+                action: 'account_verification'
+            });
             await sendOtpEmail(email, otpCode, 'account_verification');
 
             return res.status(401).json({

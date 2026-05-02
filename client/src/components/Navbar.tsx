@@ -4,6 +4,7 @@ import { FaTicketAlt } from "react-icons/fa";
 import { AuthContext } from "../context/AuthContext";
 
  const Navbar = () => {
+  
 
   // Correctly getting user and logout from context
    const context = useContext(AuthContext);
