@@ -2,10 +2,7 @@ import axios from 'axios';
 
 
 const api = axios.create({
-    baseURL: "https://bookevent-backend.onrender.com",
-    headers: {
-        'Content-Type': 'application/json'
-    }
+  baseURL: "https://bookevent-backend.onrender.com/api"
 });
 
 api.interceptors.request.use((config) => {
