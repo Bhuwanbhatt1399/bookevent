@@ -58,7 +58,7 @@ const EventDetail: React.FC = () => {
 
       try {
 
-        const { data } = await api.get<EventType>(`/api/events/${id}`);
+        const { data } = await api.get<EventType>(`/events/${id}`);
 
         setEvent(data);
 

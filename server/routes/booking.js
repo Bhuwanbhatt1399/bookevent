@@ -13,12 +13,13 @@ import {
 
 
 
-router.post('/', protect, bookEvent);
-router.get('/mybooking', protect, getMyBookings);
-
-router.delete('/:id', protect, cancelBooking);
-router.get('/all', protect, admin, getAllBookings);
 router.post('/create-order', protect, createPaymentOrder);
+router.get('/mybooking', protect, getMyBookings);
+router.get('/all', protect, admin, getAllBookings);
+router.post('/', protect, bookEvent);
+router.delete('/:id', protect, cancelBooking);
+
+
 
 
 

@@ -13,10 +13,18 @@ const generateToken = (id, role) => {
 //register user
 export const registerUser = async (req, res) => {
     const { name, email, password } = req.body;
+    if (!name || !email || !password) {
+
+        return res.status(400).json({
+            message: "All fields are required"
+        });
+
+    }
     try {
         const userExists = await User.findOne({ email });
 
         if (userExists) {
+
             return res.status(400).json({
                 message: "User already exists"
             });
@@ -65,12 +73,12 @@ export const loginUser = async (req, res) => {
 
         let user = await User.findOne({ email })
         if (!user) {
-            return res.status(400).json({ error: 'Invalid credential Please Sign Up first ' })
+            return res.status(400).json({ message: 'Invalid credential Please Sign Up first ' })
         }
         const match = await bcrypt.compare(password, user.password);
 
         if (!match) {
-            return res.status(400).json({ error: 'Invalid credential' })
+            return res.status(400).json({ message: 'Invalid credential' })
         }
         if (!user.isVerified && user.role === 'user') {
             const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
@@ -80,7 +88,7 @@ export const loginUser = async (req, res) => {
 
             return res.status(401).json({
                 message: "Account not verified a new OTP has been sent to your email",
-                 needsVerification: true
+                needsVerification: true
             })
         }
 
@@ -103,7 +111,7 @@ export const loginUser = async (req, res) => {
 
 export const verifyUser = async (req, res) => {
     try {
-        
+
 
         const { email, otp } = req.body;
         const otpRecord = await OTP.findOne({ email, Otp: otp, action: 'account_verification' });

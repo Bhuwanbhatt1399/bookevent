@@ -48,7 +48,7 @@ const Home: React.FC = () => {
   const fetchEvents = async (): Promise<void> => {
     try {
 
-      const { data } = await api.get<EventType[]>(`/api/events?search=${search}`);
+     const { data } = await api.get<EventType[]>(`/events?search=${search}`);
 
       setEvents(data);
 

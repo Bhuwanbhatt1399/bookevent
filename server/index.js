@@ -16,7 +16,10 @@ app.use(express.json());
 app.use('/uploads', express.static('uploads'));
 
 app.use(cors({
-  origin: "https://bookevent-three.vercel.app",
+  origin: [
+    "https://bookevent-three.vercel.app",
+    "http://localhost:5173"
+  ],
   credentials: true
 }));
 
@@ -27,6 +30,7 @@ app.use(cors({
 
 /* ================= ROUTES ================= */
 
+
 app.use('/api/auth', authroutes);
 
 /*  tumne "/" miss kiya tha */
@@ -34,24 +38,28 @@ app.use('/api/events', eventroutes);
 
 app.use('/api/booking', bookingroutes);
 
+app.get("/", (req, res) => {
+  res.send("API is running...");
+});
+
 /* ================= DATABASE ================= */
 
 mongoose.connect(process.env.MONGO_URI)
 
-.then(() => {
+  .then(() => {
 
-  console.log('Connected to MongoDB');
+    console.log('Connected to MongoDB');
 
-})
+  })
 
-.catch((error) => {
+  .catch((error) => {
 
-  console.log(
-    "Error connecting to MongoDB:",
-    error
-  );
+    console.log(
+      "Error connecting to MongoDB:",
+      error
+    );
 
-});
+  });
 
 /* ================= SERVER ================= */
 

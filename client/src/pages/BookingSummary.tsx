@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { useLocation } from "react-router-dom";
 import api from '../utils/axios';
+import { useNavigate } from "react-router-dom";
 
 
 
 
 const BookingSummary = () => {
-
+const navigate = useNavigate();
     const location = useLocation();
     const [paymentLoading, setPaymentLoading] = useState(false);
     // Data coming from previous page
@@ -123,6 +124,7 @@ const BookingSummary = () => {
                     );
 
                     alert("Payment successful!");
+                    navigate("/payment-success");
 
                 }
 

@@ -6,83 +6,88 @@ import razorpay from '../utils/razorpay.js';
 
 const generateOtp = () => {
 
+
     return Math.floor(100000 + Math.random() * 900000).toString();
 };
 
 
 
 export const bookEvent = async (req, res) => {
-    const { eventId, quantity } = req.body;
-    const ticketIds = [];
 
-    for (let i = 0; i < (quantity || 1); i++) {
+    try {
+        const { eventId, quantity = 1 } = req.body;
+        const ticketIds = [];
 
-        ticketIds.push(
-            "TKT-" + Math.floor(100000 + Math.random() * 900000)
+        for (let i = 0; i < (quantity || 1); i++) {
+
+            ticketIds.push(
+                "TKT-" + Math.floor(100000 + Math.random() * 900000)
+            );
+
+        }
+        const bookingId = "BK-" + Math.floor(100000 + Math.random() * 900000);
+
+
+
+        const event = await Event.findById(eventId);
+        if (!event) {
+            return res.status(404).json({
+                error: 'Event not found'
+            });
+
+        }
+
+        if (event.availableSeats < (quantity || 1)) {
+            return res.status(400).json({
+                error: 'Not enough seats available'
+            });
+        }
+
+
+        const booking = await Booking.create({
+            userId: req.user._id,
+            userName: req.user.name,
+            userEmail: req.user.email,
+            eventId,
+            bookingId: bookingId,
+            quantity: quantity || 1,
+            ticketIds: ticketIds,
+            status: 'confirmed',
+            paymentStatus: 'paid',
+            amount: event.ticketPrice * (quantity || 1)
+        });
+
+
+        event.availableSeats -= (quantity || 1);
+        await event.save();
+
+        /* ✅ SEND BOOKING EMAIL */
+
+        await sendBookingEmail(
+
+            booking.userName,
+            booking.userEmail,
+            event.title,
+            booking.bookingId,
+            booking.quantity,
+            booking.ticketIds,
+            event.date,
+            event.location
+
         );
 
-    }
-    const bookingId = "BK-" + Math.floor(100000 + Math.random() * 900000);
+        res.status(201).json({
+            message: 'Booking created successfully'
+        });
+    } catch (error) {
 
-
-
-    const event = await Event.findById(eventId);
-    if (!event) {
-        return res.status(404).json({
-            error: 'Event not found'
+        res.status(500).json({
+            error: error.message
         });
 
     }
 
-    if (event.availableSeats < (quantity || 1)) {
-        return res.status(400).json({
-            error: 'Not enough seats available'
-        });
-    }
 
-    const existingBooking = await Booking.findOne({
-        userId: req.user._id, eventId
-    });
-
-    if (existingBooking) {
-        return res.status(400).json({ error: 'You have already booked this event' })
-    }
-
-    const booking = await Booking.create({
-        userId: req.user._id,
-        userName: req.user.name,
-        userEmail: req.user.email,
-        eventId,
-        bookingId: bookingId,
-        quantity: quantity || 1,
-        ticketIds: ticketIds,
-        status: 'confirmed',
-        paymentStatus: 'paid',
-        amount: event.ticketPrice * (quantity || 1)
-    });
-
-
-    event.availableSeats -= (quantity || 1);
-    await event.save();
-
-    /* ✅ SEND BOOKING EMAIL */
-
-    await sendBookingEmail(
-
-        booking.userName,
-        booking.userEmail,
-        event.title,
-        booking.bookingId,
-        booking.quantity,
-        booking.ticketIds,
-        event.date,
-        event.location
-
-    );
-
-    res.status(201).json({
-        message: 'Booking created successfully'
-    });
 }
 
 // payment 
@@ -90,7 +95,7 @@ export const createPaymentOrder = async (req, res) => {
 
     try {
 
-        const { eventId, quantity } = req.body;
+        const { eventId, quantity = 1 } = req.body;
 
         const event = await Event.findById(eventId);
 
