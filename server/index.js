@@ -16,10 +16,7 @@ app.use(express.json());
 app.use('/uploads', express.static('uploads'));
 
 app.use(cors({
-  origin: [
-    "https://bookevent-three.vercel.app",
-    "http://localhost:5173"
-  ],
+  origin: process.env.FRONTEND_URL,
   credentials: true
 }));
 
@@ -45,20 +42,10 @@ app.get("/", (req, res) => {
 /* ================= DATABASE ================= */
 
 mongoose.connect(process.env.MONGO_URI)
-
-  .then(() => {
-
-    console.log('Connected to MongoDB');
-
-  })
-
-  .catch((error) => {
-
-    console.log(
-      "Error connecting to MongoDB:",
-      error
-    );
-
+  .then(() => console.log("MongoDB Connected"))
+  .catch((err) => {
+    console.error("DB Error:", err);
+    process.exit(1);
   });
 
 /* ================= SERVER ================= */

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import api from "../utils/axios";
+
+import Footer from "../components/Footer";
 import {
   FaCalendarAlt,
   FaMapMarkerAlt,
@@ -48,7 +50,7 @@ const Home: React.FC = () => {
   const fetchEvents = async (): Promise<void> => {
     try {
 
-     const { data } = await api.get<EventType[]>(`/events?search=${search}`);
+      const { data } = await api.get<EventType[]>(`/events?search=${search}`);
 
       setEvents(data);
 
@@ -67,12 +69,27 @@ const Home: React.FC = () => {
     <div className="flex flex-col min-h-screen">
 
       {/* Hero Section */}
-      <div className="relative bg-black text-white rounded-3xl overflow-hidden mb-12 shadow-2xl">
+      <div className="relative text-white rounded-3xl overflow-hidden mb-12 shadow-2xl">
+        {/* Background Image */}
+        <img
+          src="/hero.jpg"
+          alt="Hero Background"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+
+        {/* Dark Overlay */}
+        <div className="absolute inset-0 bg-black"></div>
 
         <div className="relative p-10 md:p-20 text-center flex flex-col items-center z-10">
+          <span className="bg-white/10 backdrop-blur-md px-6 py-2 rounded-full text-sm font-semibold mb-6 border border-white/20">
+            WELCOME TO EVENTHIVE
+          </span>
 
           <h1 className="text-5xl md:text-7xl font-black mb-6">
-            Find Your Next Experience
+            Find Your Next <br />
+            <span className="text-gray-300">
+              Unforgettable Experience
+            </span>
           </h1>
 
           <div className="w-full max-w-2xl mx-auto relative flex items-center">
@@ -196,12 +213,16 @@ const Home: React.FC = () => {
               >
 
                 {/* IMAGE + PRICE */}
-                <div className="relative h-48 bg-gray-200">
+                <div className="relative h-56 bg-gray-200">
 
                   {event.image ? (
 
                     <img
-                      src={`https://bookevent-backend.onrender.com${event.image}`}
+                      src={
+                        event.image
+                          ? `http://localhost:5000${event.image}`
+                          : "/default.jpg"
+                      }
                       alt={event.title}
                       className="w-full h-full object-cover"
                     />
@@ -230,7 +251,7 @@ const Home: React.FC = () => {
                 </div>
 
                 {/* CARD BODY */}
-                <div className="p-6">
+               <div className="p-4">
 
                   {/* CATEGORY */}
                   <p className="text-xs font-bold text-gray-500 uppercase mb-1">
@@ -240,7 +261,7 @@ const Home: React.FC = () => {
                   </p>
 
                   {/* TITLE */}
-                  <h2 className="text-xl font-bold mb-2">
+                  <h2 className="text-lg font-bold mb-1">
 
                     {event.title}
 
@@ -260,7 +281,7 @@ const Home: React.FC = () => {
                   </div>
 
                   {/* LOCATION */}
-                  <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
+                  <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
 
                     <FaMapMarkerAlt />
 
@@ -296,7 +317,7 @@ const Home: React.FC = () => {
                   {/* BUTTON */}
                   <Link
                     to={`/events/${event._id}`}
-                    className="block mt-4 text-center bg-gray-100 py-2 rounded font-medium"
+                    className="block mt-2 text-center bg-gray-100 py-2 rounded font-medium"
                   >
 
                     View Details
@@ -312,6 +333,7 @@ const Home: React.FC = () => {
           </div>
         </>
       )}
+      <Footer />
 
     </div>
   );

@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 
 
 const BookingSummary = () => {
-const navigate = useNavigate();
+    const navigate = useNavigate();
     const location = useLocation();
     const [paymentLoading, setPaymentLoading] = useState(false);
     // Data coming from previous page
@@ -114,18 +114,35 @@ const navigate = useNavigate();
 
                 handler: async function (response: any) {
 
-                    await api.post(
-                        "/booking",
-                        {
-                            eventId: event._id,
-                            quantity,
-                            razorpayPaymentId: response.razorpay_payment_id
-                        }
-                    );
+                    try {
 
-                    alert("Payment successful!");
-                    navigate("/payment-success");
+                        await api.post(
+                            "/booking",
+                            {
+                                eventId: event._id,
+                                quantity,
+                                razorpayPaymentId: response.razorpay_payment_id
+                            }
+                        );
 
+                        navigate("/payment-success", { replace: true });
+
+                    } catch (error) {
+
+                        console.error(error);
+
+                        navigate("/payment-failed", { replace: true });
+
+                    }
+
+                },
+
+                modal: {
+                    ondismiss: function () {
+
+                        navigate("/payment-failed");
+
+                    }
                 }
 
             };

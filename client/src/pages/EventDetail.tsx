@@ -108,21 +108,21 @@ const EventDetail: React.FC = () => {
   /* ✅ Booking Handler */
   const goToSummary = () => {
 
-  if (!user) {
-    navigate('/login');
-    return;
-  }
-
-  if (!event) return;
-
-  navigate("/booking-summary", {
-    state: {
-      event,
-      quantity
+    if (!user) {
+      navigate('/login');
+      return;
     }
-  });
 
-};
+    if (!event) return;
+
+    navigate("/booking-summary", {
+      state: {
+        event,
+        quantity
+      }
+    });
+
+  };
 
 
 
@@ -156,7 +156,7 @@ const EventDetail: React.FC = () => {
       {event.image ? (
 
         <img
-          src={`https://bookevent-backend.onrender.com${event.image}`}
+          src={`http://localhost:5000${event.image}`}
           alt={event.title}
           className="w-full h-80 object-cover"
         />
@@ -259,19 +259,19 @@ const EventDetail: React.FC = () => {
 
           <button
 
-  onClick={goToSummary}
+            onClick={goToSummary}
 
-  disabled={isSoldOut}
+            disabled={isSoldOut}
 
-  className="w-full py-4 px-6 rounded-xl font-bold text-lg bg-gray-900 text-white"
+            className="w-full py-4 px-6 rounded-xl font-bold text-lg bg-gray-900 text-white"
 
->
+          >
 
-  {isSoldOut
-    ? 'Sold Out'
-    : 'Book Now'}
+            {isSoldOut
+              ? 'Sold Out'
+              : 'Book Now'}
 
-</button>
+          </button>
 
           {error && (
 
@@ -283,7 +283,7 @@ const EventDetail: React.FC = () => {
 
           )}
 
-    
+
 
         </div>
 

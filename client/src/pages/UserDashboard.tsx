@@ -45,14 +45,14 @@ interface BookingType {
     eventId: EventType | null;
 
     status:
-        | 'pending'
-        | 'confirmed'
-        | 'cancelled';
+    | 'pending'
+    | 'confirmed'
+    | 'cancelled';
 
     paymentStatus:
-        | 'paid'
-        | 'unpaid'
-        | 'pending';
+    | 'paid'
+    | 'unpaid'
+    | 'pending';
 
     amount: number;
 
@@ -71,7 +71,7 @@ const UserDashboard: React.FC = () => {
 
     /* ---- Context ---- */
 
-  const { user } = useContext(AuthContext) as AuthContextType;
+    const { user } = useContext(AuthContext) as AuthContextType;
 
     const navigate = useNavigate();
 
@@ -138,20 +138,22 @@ const UserDashboard: React.FC = () => {
             ) {
 
                 try {
+                    setBookings(prev => prev.filter(b => b._id !== id));
+                    // await api.delete(
+                    //     `/booking/${id}`
+                    // );
 
-                    await api.delete(
-                        `/booking/${id}`
-                    );
+                    // fetchBookings();
 
-                    fetchBookings();
+
 
                 } catch (error) {
 
-    const err = error as AxiosError<{ message: string }>;
+                    const err = error as AxiosError<{ message: string }>;
 
-    alert(
-        err.response?.data?.message
-        || 'Error cancelling booking'
+                    alert(
+                        err.response?.data?.message
+                        || 'Error cancelling booking'
                     );
 
                 }
@@ -186,7 +188,7 @@ const UserDashboard: React.FC = () => {
 
                 <div className="w-20 h-20 bg-gray-200 text-gray-900 rounded-full flex items-center justify-center text-3xl font-bold uppercase tracking-widest shrink-0">
 
-                    {user?.name.charAt(0)}
+                    {user?.name?.charAt(0)}
 
                 </div>
 
@@ -287,10 +289,10 @@ const UserDashboard: React.FC = () => {
                                             <div className="flex flex-col gap-1 items-end">
 
                                                 <span className={`px-2 py-1 text-[10px] font-black rounded uppercase tracking-wider ${booking.status === 'confirmed'
-                                                        ? 'bg-green-100 text-green-700'
-                                                        : booking.status === 'cancelled'
-                                                            ? 'bg-red-100 text-red-700'
-                                                            : 'bg-yellow-100 text-yellow-700'
+                                                    ? 'bg-green-100 text-green-700'
+                                                    : booking.status === 'cancelled'
+                                                        ? 'bg-red-100 text-red-700'
+                                                        : 'bg-yellow-100 text-yellow-700'
                                                     }`}>
 
                                                     {booking.status}
@@ -300,8 +302,8 @@ const UserDashboard: React.FC = () => {
                                                 {booking.status !== 'cancelled' && (
 
                                                     <span className={`px-2 py-1 text-[10px] font-black rounded uppercase tracking-wider ${booking.paymentStatus === 'paid'
-                                                            ? 'bg-blue-100 text-blue-700'
-                                                            : 'bg-gray-100 text-gray-700'
+                                                        ? 'bg-blue-100 text-blue-700'
+                                                        : 'bg-gray-100 text-gray-700'
                                                         }`}>
 
                                                         {booking.paymentStatus.replace('_', ' ')}
@@ -359,7 +361,7 @@ const UserDashboard: React.FC = () => {
                                                 {" "}
                                                 {new Date(
                                                     booking.createdAt
-                                
+
                                                 ).toLocaleDateString()}
 
                                             </p>

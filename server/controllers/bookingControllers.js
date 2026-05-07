@@ -15,55 +15,72 @@ const generateOtp = () => {
 export const bookEvent = async (req, res) => {
 
     try {
+
         const { eventId, quantity = 1 } = req.body;
+
         const ticketIds = [];
 
-        for (let i = 0; i < (quantity || 1); i++) {
+        for (let i = 0; i < quantity; i++) {
 
             ticketIds.push(
                 "TKT-" + Math.floor(100000 + Math.random() * 900000)
             );
 
         }
-        const bookingId = "BK-" + Math.floor(100000 + Math.random() * 900000);
 
+        const bookingId =
+            "BK-" + Math.floor(100000 + Math.random() * 900000);
 
+        const event =
+            await Event.findById(eventId);
 
-        const event = await Event.findById(eventId);
         if (!event) {
+
             return res.status(404).json({
                 error: 'Event not found'
             });
 
         }
 
-        if (event.availableSeats < (quantity || 1)) {
+        if (event.availableSeats < quantity) {
+
             return res.status(400).json({
                 error: 'Not enough seats available'
             });
+
         }
 
+        const booking =
+            await Booking.create({
 
-        const booking = await Booking.create({
-            userId: req.user._id,
-            userName: req.user.name,
-            userEmail: req.user.email,
-            eventId,
-            bookingId: bookingId,
-            quantity: quantity || 1,
-            ticketIds: ticketIds,
-            status: 'confirmed',
-            paymentStatus: 'paid',
-            amount: event.ticketPrice * (quantity || 1)
-        });
+                userId: req.user._id,
+                userName: req.user.name,
+                userEmail: req.user.email,
+                eventId,
+                bookingId,
+                quantity,
+                ticketIds,
+                status: 'confirmed',
+                paymentStatus: 'paid',
+                amount: event.ticketPrice * quantity
 
+            });
 
-        event.availableSeats -= (quantity || 1);
+        event.availableSeats -= quantity;
+
         await event.save();
 
-        /* ✅ SEND BOOKING EMAIL */
+        /* Send response first */
 
-        await sendBookingEmail(
+        res.status(201).json({
+
+            message: 'Booking created successfully'
+
+        });
+
+        /* Send email in background */
+
+        sendBookingEmail(
 
             booking.userName,
             booking.userEmail,
@@ -74,21 +91,25 @@ export const bookEvent = async (req, res) => {
             event.date,
             event.location
 
-        );
+        ).catch(err => {
 
-        res.status(201).json({
-            message: 'Booking created successfully'
-        });
-    } catch (error) {
+            console.error("Email failed:", err);
 
-        res.status(500).json({
-            error: error.message
         });
 
     }
 
+    catch (error) {
 
-}
+        res.status(500).json({
+
+            error: error.message
+
+        });
+
+    }
+
+};
 
 // payment 
 export const createPaymentOrder = async (req, res) => {
@@ -260,4 +281,3 @@ export const cancelBooking = async (req, res) => {
         message: 'Booking cancelled'
     });
 };
-//hello hwo are you  sp 

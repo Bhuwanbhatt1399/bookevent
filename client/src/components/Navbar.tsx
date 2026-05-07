@@ -1,13 +1,12 @@
-import  { useContext } from "react";
+import { useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaTicketAlt } from "react-icons/fa";
 import { AuthContext } from "../context/AuthContext";
 
- const Navbar = () => {
-  
+const Navbar = () => {
 
-  // Correctly getting user and logout from context
-   const context = useContext(AuthContext);
+// Correctly getting user and logout from context
+  const context = useContext(AuthContext);
 
   if (!context) {
     throw new Error("AuthContext not found");
@@ -29,10 +28,10 @@ import { AuthContext } from "../context/AuthContext";
         <div className="flex flex-col md:flex-row justify-between items-center py-4 gap-4">
 
           {/* Logo */}
-          <Link  to="/"  className="text-white text-2xl font-bold flex items-center gap-2" >
-          
+          <Link to="/" className="text-white text-2xl font-bold flex items-center gap-2" >
+
             <FaTicketAlt />
-            Eventora
+            EventHive
           </Link>
 
           {/* Menu */}
@@ -55,7 +54,7 @@ import { AuthContext } from "../context/AuthContext";
 
                 {/* Logout */}
                 <button
-                  onClick={handleLogout}  className="bg-gray-700 hover:bg-black text-white px-4 py-2 rounded-md transition"
+                  onClick={handleLogout} className="bg-gray-700 hover:bg-black text-white px-4 py-2 rounded-md transition"
                 >
                   Logout
                 </button>
@@ -70,7 +69,7 @@ import { AuthContext } from "../context/AuthContext";
                 </Link>
 
                 {/* Register */}
-                <Link to="/register"  className="bg-white text-gray-900 hover:bg-gray-100 px-4 py-2 rounded-md font-semibold transition"
+                <Link to="/register" className="bg-white text-gray-900 hover:bg-gray-100 px-4 py-2 rounded-md font-semibold transition"
                 >
                   Sign Up
                 </Link>

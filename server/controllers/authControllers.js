@@ -47,17 +47,12 @@ export const registerUser = async (req, res) => {
         // save new OTP
         await OTP.create({
             email,
-            Otp: otpCode,
+            otp: otpCode,
             action: 'account_verification'
         });
 
-        // send OTP email
-        try {
-            await sendOtpEmail(email, otpCode, 'account_verification');
-        } catch (emailError) {
-            console.error("Email service error:", emailError);
-            return res.status(500).json({ message: "User registered, but failed to send verification email." });
-        }
+
+
         console.log("OTP:", otpCode)
         //  create user
         const user = await User.create({
@@ -68,15 +63,24 @@ export const registerUser = async (req, res) => {
             isVerified: false
         });
 
+        // send OTP email
+
+        try {
+            await sendOtpEmail(email, otpCode, 'account_verification');
+        } catch (emailError) {
+            console.log("Email failed but user created", emailError);
+        }
+
 
         res.status(201).json({
+            success: true,
             message: "User registered successfully . Please check your email for OTP to verify your account ",
             email: user.email
         })
 
     } catch (error) {
         console.error("REGISTER ERROR:", error)
-        res.status(500).json({ error: error.message })
+        res.status(500).json({ message: error.message })
     }
 }
 
@@ -109,7 +113,7 @@ export const loginUser = async (req, res) => {
             // save new OTP
             await OTP.create({
                 email,
-                Otp: otpCode,
+                otp: otpCode,
                 action: 'account_verification'
             });
             await sendOtpEmail(email, otpCode, 'account_verification');
@@ -121,15 +125,18 @@ export const loginUser = async (req, res) => {
         }
 
         res.json({
-            message: 'Login successfully',
-            _id: user._id,
-            name: user.name,
-            email: user.email,
-            role: user.role,
+            success: true,
+            message: "Login successful",   // ✅ add this
+            user: {
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role
+            },
             token: generateToken(user._id, user.role)
         });
     } catch (error) {
-        res.status(500).json({ error: error.message })
+        res.status(500).json({ message: error.message })
     }
 
 };
@@ -142,10 +149,10 @@ export const verifyUser = async (req, res) => {
 
 
         const { email, otp } = req.body;
-        const otpRecord = await OTP.findOne({ email, Otp: otp, action: 'account_verification' });
+        const otpRecord = await OTP.findOne({ email, otp: otp, action: 'account_verification' });
 
         if (!otpRecord) {
-            return res.status(401).json({ error: 'Invalid or expired OTP' })
+            return res.status(401).json({ message: 'Invalid or expired OTP' })
         }
         const user = await User.findOneAndUpdate({ email }, { isVerified: true }, { new: true })
 
@@ -156,16 +163,18 @@ export const verifyUser = async (req, res) => {
         });
 
         res.json({
-            message: 'Account verified successfully.Now you can log in ',
-            _id: user._id,
-            name: user.name,
-            email: user.email,
-            role: user.role,
+            success: true,
+            message: 'Account verified successfully',
+            user: {
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role
+            },
             token: generateToken(user._id, user.role)
-
         });
     } catch (error) {
-        res.status(500).json({ error: error.message })
+        res.status(500).json({ message: error.message })
     }
 
 };

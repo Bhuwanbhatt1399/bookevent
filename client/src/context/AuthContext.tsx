@@ -1,13 +1,13 @@
 
-import  { createContext, useState, useEffect, } from "react";
+import { createContext, useState, useEffect, } from "react";
 import type { ReactNode } from 'react';
 import type { User } from "../types/user";
 import api from "../utils/axios";
 
-    
+
 
 // Context type
- export interface AuthContextType {
+export interface AuthContextType {
 
     user: User | null;
     loading: boolean;
@@ -19,7 +19,7 @@ import api from "../utils/axios";
 }
 
 //  Create Context
-  export const AuthContext =
+export const AuthContext =
     createContext<AuthContextType | null>(null);
 
 
@@ -43,7 +43,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
             const parsedUser: User = JSON.parse(storedUser);
             setUser(parsedUser);
-            
+
         }
         setLoading(false);
     }, []);
@@ -67,10 +67,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
                 response.data;
 
             return data;
-        } catch (error) {
-
+        } catch (error: any) {
             console.log("Registration failed", error);
-            throw error;
+            throw error.response?.data?.message || "Registration failed";
         }
     };
 
@@ -82,15 +81,16 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
         try {
             const response = await api.post("/auth/login", { email, password, });
-            const data: User = response.data;
-            setUser(data);
-            localStorage.setItem("user", JSON.stringify(data));
+            const data = response.data;
+
+            setUser(data.user);
+            localStorage.setItem("user", JSON.stringify(data.user));
             localStorage.setItem("token", data.token);
 
-            return data;
-        } catch (error) {
-            console.log("Login failed", error);
-            throw error;
+            return data.user;
+        } catch (error: any) {
+            console.log("Registration failed", error);
+            throw error.response?.data?.message || "Login failed";
         }
     };
 
@@ -99,22 +99,24 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         email: string,
         otp: string
     ): Promise<User> => {
-    
+
 
         try {
             const response = await api.post("/auth/verify-otp", { email, otp, });
-            const data: User = response.data;
-            setUser(data);
 
-            localStorage.setItem("user", JSON.stringify(data));
+
+
+            const data = response.data;
+
+            setUser(data.user);
+            localStorage.setItem("user", JSON.stringify(data.user));
             localStorage.setItem("token", data.token);
 
-            return data;
+            return data.user;
 
-        } catch (error) {
-
-            console.log("OTP verification failed", error);
-            throw error;
+        } catch (error: any) {
+            console.log("Registration failed", error);
+            throw error.response?.data?.message || "OTP Verification failed";
         }
     };
 

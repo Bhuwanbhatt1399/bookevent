@@ -1,7 +1,7 @@
-import React, { useState, useContext  } from 'react';
+import React, { useState, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
-import type  { AuthContextType } from "../context/AuthContext";
+import type { AuthContextType } from "../context/AuthContext";
 
 const Register: React.FC = () => {
 
@@ -21,9 +21,9 @@ const Register: React.FC = () => {
     const navigate = useNavigate();
 
     /* ---- Submit Handler ---- */
-  const handleSubmit = async (
-  e: React.SubmitEvent<HTMLFormElement>
-): Promise<void> => {
+    const handleSubmit = async (
+        e: React.SubmitEvent<HTMLFormElement>
+    ): Promise<void> => {
         e.preventDefault();
 
         setLoading(true);
@@ -50,7 +50,7 @@ const Register: React.FC = () => {
 
             /* ---- Safe Error Handling ---- */
             if (err instanceof Error) {
-                setError(err.message);
+               setError(typeof err === "string" ? err : "Something went wrong");
             } else {
                 setError('Something went wrong');
             }
@@ -110,7 +110,7 @@ const Register: React.FC = () => {
                                 required
                                 className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-gray-700 transition shadow-sm"
                                 value={name}
-                                   onChange={(e) =>
+                                onChange={(e) =>
                                     setName(e.target.value)
                                 }
                             />
