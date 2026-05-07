@@ -220,7 +220,7 @@ const Home: React.FC = () => {
                     <img
                       src={
                         event.image
-                          ? `http://localhost:5000${event.image}`
+                          ? `https://bookevent-backend.onrender.com${event.image}`
                           : "/default.jpg"
                       }
                       alt={event.title}

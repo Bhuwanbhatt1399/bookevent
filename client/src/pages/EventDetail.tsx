@@ -156,7 +156,7 @@ const EventDetail: React.FC = () => {
       {event.image ? (
 
         <img
-          src={`http://localhost:5000${event.image}`}
+          src={`https://bookevent-backend.onrender.com${event.image}`}
           alt={event.title}
           className="w-full h-80 object-cover"
         />
