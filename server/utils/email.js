@@ -6,20 +6,12 @@ dns.setDefaultResultOrder("ipv4first");
 dotenv.config();
 
 const transporter = nodemailer.createTransport({
-
-    host: "smtp.gmail.com",
-    port: 587,
-    secure: false,
+    service: "gmail",
 
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
-    },
-
-    tls: {
-        rejectUnauthorized: false
     }
-
 });
 
 export const sendBookingEmail = async (
@@ -127,11 +119,11 @@ export const sendOtpEmail = async (
         console.log(`otp send to ${userEmail} for ${type}`);
     }
     catch (error) {
-    console.error(
-        `Error sending OTP email to ${userEmail} for ${type}`,
-        error.message
-    );
+        console.error(
+            `Error sending OTP email to ${userEmail} for ${type}`,
+            error.message
+        );
 
-    
-}
+
+    }
 }
