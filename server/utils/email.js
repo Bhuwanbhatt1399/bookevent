@@ -8,16 +8,16 @@ async function createTransporter() {
     return nodemailer.createTransport({
 
         host: "smtp-relay.brevo.com",
-        port: 465,
-        secure: true,
+        port: 587,
+        secure: false,
 
         auth: {
             user: process.env.EMAIL_USER,
             pass: process.env.EMAIL_PASS,
         },
-        connectionTimeout: 10000, // 10 seconds
-        greetingTimeout: 10000,
-        socketTimeout: 10000,
+        connectionTimeout: 30000, // 30 seconds
+        greetingTimeout: 30000,
+        socketTimeout: 30000,
     });
 
 }
@@ -74,6 +74,9 @@ export const sendBookingEmail = async (
 
 
         const transporter = await createTransporter();
+        await transporter.verify();
+
+        console.log("SMTP READY");
 
         const info = await transporter.sendMail(mailOption);
 
@@ -115,6 +118,10 @@ export const sendOtpEmail = async (
         };
 
         const transporter = await createTransporter();
+
+        await transporter.verify();
+
+        console.log("SMTP READY");
         const info = await transporter.sendMail(mailOption);
         console.log(process.env.EMAIL_USER);
         console.log(process.env.EMAIL_PASS);
