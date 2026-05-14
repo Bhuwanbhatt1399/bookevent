@@ -1,57 +1,23 @@
 
 import nodemailer from 'nodemailer'
 import dotenv from "dotenv";
-import dns from "dns/promises";
-dns.setDefaultResultOrder("ipv4first");
 dotenv.config();
-
-const SMTP_HOSTNAME = "smtp.gmail.com";
-
-async function smtpIpv4Host() {
-
-    try {
-
-        const addrs = await dns.resolve4(SMTP_HOSTNAME);
-
-        if (addrs && addrs.length) {
-            return addrs[0];
-        }
-
-    } catch (error) {
-
-        console.warn("DNS resolve failed:", error.message);
-
-    }
-
-    return SMTP_HOSTNAME;
-}
 
 async function createTransporter() {
 
-    const host = await smtpIpv4Host();
-
     return nodemailer.createTransport({
 
-        host,
+        host: "smtp-relay.brevo.com",
         port: 587,
         secure: false,
-
-        servername: SMTP_HOSTNAME,
-
-        connectionTimeout: 20000,
-        greetingTimeout: 15000,
-        socketTimeout: 25000,
 
         auth: {
             user: process.env.EMAIL_USER,
             pass: process.env.EMAIL_PASS,
-        },
-
-        tls: {
-            servername: SMTP_HOSTNAME,
-        },
+        }
 
     });
+
 }
 
 
@@ -69,7 +35,7 @@ export const sendBookingEmail = async (
     try {
 
         const mailOption = {
-            from: `"EventHive" <${process.env.EMAIL_USER}>`,
+            from: `"EventHive" <${process.env.SENDER_EMAIL}>`,
             to: userEmail,
             subject: `Booking Confirmed - ${eventTitle}`,
 
@@ -133,7 +99,7 @@ export const sendOtpEmail = async (
             : 'Please use the following OTP to verify and confirm your event booking';
 
         const mailOption = {
-            from: `EventHive <${process.env.EMAIL_USER}>`,
+            from: `EventHive <${process.env.SENDER_EMAIL}>`,
             to: userEmail,
             subject: title,
             html: `
