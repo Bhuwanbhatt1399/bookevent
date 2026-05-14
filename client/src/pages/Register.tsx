@@ -46,16 +46,13 @@ const Register: React.FC = () => {
 
             }
 
-        } catch (err: unknown) {
+        } catch (err: any) {
 
-            /* ---- Safe Error Handling ---- */
-            if (err instanceof Error) {
-               setError(typeof err === "string" ? err : "Something went wrong");
-            } else {
-                setError('Something went wrong');
-            }
+            setError(err?.response?.data?.message || err || "Something went wrong");
 
-        } finally {
+        }
+
+        finally {
 
             setLoading(false);
 

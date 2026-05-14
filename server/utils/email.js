@@ -6,12 +6,19 @@ dns.setDefaultResultOrder("ipv4first");
 dotenv.config();
 
 const transporter = nodemailer.createTransport({
-    service: "gmail",
+
+    host: "smtp.gmail.com",
+    port: 587,
+    secure: false,
 
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
+    },
+    tls: {
+        rejectUnauthorized: false // Hosted environment par certificate block hone se rokta hai
     }
+
 });
 
 export const sendBookingEmail = async (
@@ -27,7 +34,7 @@ export const sendBookingEmail = async (
     try {
 
         const mailOption = {
-            from: `"UtsavBook" <${process.env.EMAIL_USER}>`,
+            from: `"EventHive" <${process.env.EMAIL_USER}>`,
             to: userEmail,
             subject: `Booking Confirmed - ${eventTitle}`,
 
@@ -79,7 +86,13 @@ export const sendBookingEmail = async (
             `
         };
         console.log("📩 Sending email to:", userEmail);
-        await transporter.sendMail(mailOption);
+        // await transporter.verify();
+
+        // console.log("SMTP READY");
+
+        const info = await transporter.sendMail(mailOption);
+
+        console.log("MAIL RESPONSE:", info);
 
         console.log('Email send successfully to', userEmail);
 
@@ -103,27 +116,48 @@ export const sendOtpEmail = async (
             : 'Please use the following OTP to verify and confirm your event booking';
 
         const mailOption = {
-            from: `UtsavBook <${process.env.EMAIL_USER}>`,
+            from: `EventHive <${process.env.EMAIL_USER}>`,
             to: userEmail,
             subject: title,
-            html: `<h2>${title}</h2>
-
-                <p>${msg}</p>
-
-                <h1>${otp}</h1>
-
-                <p>This OTP is valid for 5 minutes.</p>`
+            html: `
+            <div style="font-family: Arial, sans-serif; padding: 20px;">
+                    <h2 style="color: #4CAF50;">${title}</h2>
+                    <p>${msg}</p>
+                    <h1 style="background: #f4f4f4; padding: 10px; display: inline-block; letter-spacing: 5px;">${otp}</h1>
+                    <p>This OTP is valid for 5 minutes.</p>
+                </div>
+                `
 
         };
-        await transporter.sendMail(mailOption);
-        console.log(`otp send to ${userEmail} for ${type}`);
-    }
-    catch (error) {
-        console.error(
-            `Error sending OTP email to ${userEmail} for ${type}`,
-            error.message
-        );
 
 
+
+        //     await new Promise((resolve, reject) => {
+        //         transporter.sendMail(mailOption, (err, info) => {
+        //             if (err) {
+        //                 console.error("SMTP error:", err);
+        //                 reject(err);
+        //             } else {
+        //                 console.log("MAIL RESPONSE:", info);
+        //                 console.log(`OTP sent to ${userEmail} for ${type}`);
+        //                 resolve(info);
+        //             }
+        //         });
+        //     });
+        // } catch (error) {
+        //     console.error(
+        //         `Error sending OTP email to ${userEmail} for ${type}:`,
+        //         error.message
+        //     );
+        //     throw error; // important: don’t swallow error; let register controller fail
+        // }
+
+        //Manual Promise hatayein, transporter.sendMail khud promise return karta hai agar callback na ho
+        const info = await transporter.sendMail(mailOption);
+        console.log("✅ Email sent:", info.messageId);
+        return info;
+    } catch (error) {
+        console.error("❌ Nodemailer Error:", error.message);
+        throw error; // Isse controller ko pata chalega ki mail fail hua hai
     }
-}
+};

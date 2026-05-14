@@ -11,50 +11,25 @@ const generateToken = (id, role) => {
 }
 
 //register user
+// Register User
 export const registerUser = async (req, res) => {
     const { name, email, password } = req.body;
+
     if (!name || !email || !password) {
-
-        return res.status(400).json({
-            message: "All fields are required"
-        });
-
+        return res.status(400).json({ message: "All fields are required" });
     }
+
     try {
+        // 1. Check if user already exists
         const userExists = await User.findOne({ email });
-
         if (userExists) {
-
-            return res.status(400).json({
-                message: "User already exists"
-            });
+            return res.status(400).json({ message: "User already exists" });
         }
-        // password hashing
+
+        // 2. Hash password
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // generate OTP
-
-        const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-        console.log(`otp for ${email}: ${otpCode}`)
-
-        // save OTP in database
-        // delete old OTP first
-        await OTP.deleteMany({
-            email,
-            action: 'account_verification'
-        });
-
-        // save new OTP
-        await OTP.create({
-            email,
-            otp: otpCode,
-            action: 'account_verification'
-        });
-
-
-
-        console.log("OTP:", otpCode)
-        //  create user
+        // 3. Create User record (isVerified: false)
         const user = await User.create({
             name,
             email,
@@ -63,70 +38,84 @@ export const registerUser = async (req, res) => {
             isVerified: false
         });
 
-        // send OTP email
+        // 4. Generate & Save OTP
+        const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
 
+        await OTP.deleteMany({ email, action: 'account_verification' });
+        await OTP.create({
+            email,
+            otp: otpCode,
+            action: 'account_verification'
+        });
+
+        console.log(`✅ OTP generated for ${email}: ${otpCode}`);
+
+        // 5. Send Email (Wait for it)
         try {
             await sendOtpEmail(email, otpCode, 'account_verification');
+            console.log("📧 OTP email sent successfully");
+
+            return res.status(201).json({
+                success: true,
+                message: "User registered successfully. Please check your email for OTP.",
+                email: user.email
+            });
         } catch (emailError) {
-            console.log("Email failed but user created", emailError);
+            console.error("❌ Email sending failed:", emailError.message);
+            // Agar mail fail ho jaye, tab bhi user record ban chuka hai
+            // Isliye hum user ko login karke resend karne ka option dete hain
+            return res.status(201).json({
+                success: true,
+                message: "User registered, but email failed. Please login to resend OTP.",
+                email: user.email
+            });
         }
 
-
-        res.status(201).json({
-            success: true,
-            message: "User registered successfully . Please check your email for OTP to verify your account ",
-            email: user.email
-        })
-
     } catch (error) {
-        console.error("REGISTER ERROR:", error)
-        res.status(500).json({ message: error.message })
+        console.error("❌ REGISTER ERROR:", error);
+        return res.status(500).json({ message: error.message });
     }
-}
+};
 
-
-
-//Login user
+// Login User
 export const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
 
-
-        let user = await User.findOne({ email })
+        const user = await User.findOne({ email });
         if (!user) {
-            return res.status(400).json({ message: 'Invalid credential Please Sign Up first ' })
+            return res.status(400).json({ message: 'Invalid credentials. Please Sign Up first.' });
         }
-        const match = await bcrypt.compare(password, user.password);
 
+        const match = await bcrypt.compare(password, user.password);
         if (!match) {
-            return res.status(400).json({ message: 'Invalid credential' })
+            return res.status(400).json({ message: 'Invalid credentials' });
         }
+
+        // Check if verified
         if (!user.isVerified && user.role === 'user') {
             const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-            // await OTP.deleteMany({ email, action: 'account_verification' })// remove old otp    
-            // delete old OTP first
-            await OTP.deleteMany({
-                email,
-                action: 'account_verification'
-            });
 
-            // save new OTP
+            await OTP.deleteMany({ email, action: 'account_verification' });
             await OTP.create({
                 email,
                 otp: otpCode,
                 action: 'account_verification'
             });
+
             await sendOtpEmail(email, otpCode, 'account_verification');
 
             return res.status(401).json({
-                message: "Account not verified a new OTP has been sent to your email",
-                needsVerification: true
-            })
+                message: "Account not verified. A new OTP has been sent to your email.",
+                needsVerification: true,
+                email: user.email
+            });
         }
 
-        res.json({
+        // Success Login
+        return res.status(200).json({
             success: true,
-            message: "Login successful",   // ✅ add this
+            message: "Login successful",
             user: {
                 _id: user._id,
                 name: user.name,
@@ -136,9 +125,8 @@ export const loginUser = async (req, res) => {
             token: generateToken(user._id, user.role)
         });
     } catch (error) {
-        res.status(500).json({ message: error.message })
+        return res.status(500).json({ message: error.message });
     }
-
 };
 
 
