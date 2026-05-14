@@ -1,25 +1,60 @@
 
 import nodemailer from 'nodemailer'
 import dotenv from "dotenv";
-import dns from "dns";
+import dns from "dns/promises";
 dns.setDefaultResultOrder("ipv4first");
 dotenv.config();
 
-const transporter = nodemailer.createTransport({
+const SMTP_HOSTNAME = "smtp.gmail.com";
 
-    host: "smtp.gmail.com",
-    port: 587,
-    secure: false,
+async function smtpIpv4Host() {
 
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-    },
-    tls: {
-        rejectUnauthorized: false // Hosted environment par certificate block hone se rokta hai
+    try {
+
+        const addrs = await dns.resolve4(SMTP_HOSTNAME);
+
+        if (addrs && addrs.length) {
+            return addrs[0];
+        }
+
+    } catch (error) {
+
+        console.warn("DNS resolve failed:", error.message);
+
     }
 
-});
+    return SMTP_HOSTNAME;
+}
+
+async function createTransporter() {
+
+    const host = await smtpIpv4Host();
+
+    return nodemailer.createTransport({
+
+        host,
+        port: 587,
+        secure: false,
+
+        servername: SMTP_HOSTNAME,
+
+        connectionTimeout: 20000,
+        greetingTimeout: 15000,
+        socketTimeout: 25000,
+
+        auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASS,
+        },
+
+        tls: {
+            servername: SMTP_HOSTNAME,
+        },
+
+    });
+}
+
+
 
 export const sendBookingEmail = async (
     userName,
@@ -42,34 +77,16 @@ export const sendBookingEmail = async (
                <h2>Hi ${userName}</h2>
 
                 <p>Your booking has been successfully confirmed.</p>
-
                 <h3>Event Details:</h3>
+                   <p><strong>Event:</strong> ${eventTitle} </p>
 
-                <p>
-                    <strong>Event:</strong> ${eventTitle}
-                </p>
-
-                <p>
-                <strong>Date:</strong> ${eventDate}
-                </p>
-
-                <p>
-                    <strong>Venue:</strong> ${eventLocation}
-                </p>
-
-                <hr>
-
-                <h3>Booking Details:</h3>
-
-                <p>
-                    <strong>Booking ID:</strong> ${bookingId}
-                </p>
-
-                <p>
-                    <strong>Number of Tickets:</strong> ${quantity}
-                </p>
-
-                <h4>Ticket IDs:</h4>
+                <p> <strong>Date:</strong> ${eventDate}  </p>
+                <p><strong>Venue:</strong> ${eventLocation}</p>
+               <hr>
+                 <h3>Booking Details:</h3>
+                   <p> <strong>Booking ID:</strong> ${bookingId}</p>
+                <p><strong>Number of Tickets:</strong> ${quantity} </p>
+                  <h4>Ticket IDs:</h4>
 
                 <ul>
                     ${ticketIds.map(id => `<li>${id}</li>`).join("")}
@@ -86,9 +103,9 @@ export const sendBookingEmail = async (
             `
         };
         console.log("📩 Sending email to:", userEmail);
-        // await transporter.verify();
 
-        // console.log("SMTP READY");
+
+        const transporter = await createTransporter();
 
         const info = await transporter.sendMail(mailOption);
 
@@ -127,35 +144,14 @@ export const sendOtpEmail = async (
                     <p>This OTP is valid for 5 minutes.</p>
                 </div>
                 `
-
         };
 
-
-
-        //     await new Promise((resolve, reject) => {
-        //         transporter.sendMail(mailOption, (err, info) => {
-        //             if (err) {
-        //                 console.error("SMTP error:", err);
-        //                 reject(err);
-        //             } else {
-        //                 console.log("MAIL RESPONSE:", info);
-        //                 console.log(`OTP sent to ${userEmail} for ${type}`);
-        //                 resolve(info);
-        //             }
-        //         });
-        //     });
-        // } catch (error) {
-        //     console.error(
-        //         `Error sending OTP email to ${userEmail} for ${type}:`,
-        //         error.message
-        //     );
-        //     throw error; // important: don’t swallow error; let register controller fail
-        // }
-
-        //Manual Promise hatayein, transporter.sendMail khud promise return karta hai agar callback na ho
+        const transporter = await createTransporter();
         const info = await transporter.sendMail(mailOption);
+
         console.log("✅ Email sent:", info.messageId);
         return info;
+
     } catch (error) {
         console.error("❌ Nodemailer Error:", error.message);
         throw error; // Isse controller ko pata chalega ki mail fail hua hai

@@ -11,9 +11,9 @@ const userSchema = new mongoose.Schema({
         required: true,
         unique: true,
         validate: {
-        validator: validator.isEmail,
-        message: "Enter valid email"
-    }
+            validator: validator.isEmail,
+            message: "Enter valid email"
+        }
     },
     password: {
         type: String,
@@ -27,7 +27,10 @@ const userSchema = new mongoose.Schema({
     isVerified: {
         type: Boolean,
         default: false
-    }, 
+    }
 });
 
 export default mongoose.model('User', userSchema)
+
+
+

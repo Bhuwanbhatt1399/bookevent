@@ -7,19 +7,12 @@ import authroutes from './routes/auth.js';
 import eventroutes from './routes/events.js';
 import bookingroutes from './routes/booking.js';
 
-
 dotenv.config();
 
 const app = express();
 
 app.use(express.json());
 app.use('/uploads', express.static('uploads'));
-
-// app.use(cors({
-//   "http://localhost:5173"
-//   origin: process.env.FRONTEND_URL,
-//   credentials: true
-// }));
 
 
 app.use(cors({
@@ -30,16 +23,14 @@ app.use(cors({
   credentials: true
 }));
 
-/*  VERY IMPORTANT — uploads static folder */
 
 
 
-/* ================= ROUTES ================= */
+//  ROUTES 
 
 
 app.use('/api/auth', authroutes);
 
-/*  tumne "/" miss kiya tha */
 app.use('/api/events', eventroutes);
 
 app.use('/api/booking', bookingroutes);
@@ -48,7 +39,7 @@ app.get("/", (req, res) => {
   res.send("API is running...");
 });
 
-/* ================= DATABASE ================= */
+
 
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB Connected"))
@@ -57,7 +48,7 @@ mongoose.connect(process.env.MONGO_URI)
     process.exit(1);
   });
 
-/* ================= SERVER ================= */
+// SERVER 
 
 const PORT =
   process.env.PORT || 5000;

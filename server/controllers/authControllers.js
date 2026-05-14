@@ -4,22 +4,21 @@ import bcrypt from "bcrypt";
 import { sendOtpEmail } from '../utils/email.js'
 import jwt from "jsonwebtoken";
 
-
-
 const generateToken = (id, role) => {
     return jwt.sign({ id, role }, process.env.JWT_SECRET, { expiresIn: '7d' })
 }
 
-//register user
+
 // Register User
 export const registerUser = async (req, res) => {
-    const { name, email, password } = req.body;
-
-    if (!name || !email || !password) {
-        return res.status(400).json({ message: "All fields are required" });
-    }
-
     try {
+        const { name, email, password } = req.body;
+
+        if (!name || !email || !password) {
+            return res.status(400).json({ message: "All fields are required" });
+        };
+
+
         // 1. Check if user already exists
         const userExists = await User.findOne({ email });
         if (userExists) {
@@ -51,31 +50,30 @@ export const registerUser = async (req, res) => {
         console.log(`✅ OTP generated for ${email}: ${otpCode}`);
 
         // 5. Send Email (Wait for it)
-        try {
-            await sendOtpEmail(email, otpCode, 'account_verification');
-            console.log("📧 OTP email sent successfully");
-
-            return res.status(201).json({
-                success: true,
-                message: "User registered successfully. Please check your email for OTP.",
-                email: user.email
+        sendOtpEmail(email, otpCode, 'account_verification')
+            .then(() => {
+                console.log("📧 OTP email sent successfully");
+            })
+            .catch((emailError) => {
+                console.error("❌ Email sending failed:", emailError.message);
             });
-        } catch (emailError) {
-            console.error("❌ Email sending failed:", emailError.message);
-            // Agar mail fail ho jaye, tab bhi user record ban chuka hai
-            // Isliye hum user ko login karke resend karne ka option dete hain
-            return res.status(201).json({
-                success: true,
-                message: "User registered, but email failed. Please login to resend OTP.",
-                email: user.email
-            });
-        }
 
+        return res.status(201).json({
+            success: true,
+            message: "User registered successfully. Please check your email for OTP.",
+            email: user.email
+        });
     } catch (error) {
-        console.error("❌ REGISTER ERROR:", error);
-        return res.status(500).json({ message: error.message });
+
+        return res.status(500).json({
+            message: error.message
+        });
+
     }
+
 };
+
+
 
 // Login User
 export const loginUser = async (req, res) => {
@@ -103,7 +101,13 @@ export const loginUser = async (req, res) => {
                 action: 'account_verification'
             });
 
-            await sendOtpEmail(email, otpCode, 'account_verification');
+            sendOtpEmail(email, otpCode, 'account_verification')
+                .then(() => {
+                    console.log("📧 OTP resend successful");
+                })
+                .catch((error) => {
+                    console.error("❌ OTP resend failed:", error.message);
+                });
 
             return res.status(401).json({
                 message: "Account not verified. A new OTP has been sent to your email.",
