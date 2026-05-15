@@ -251,7 +251,7 @@ const Home: React.FC = () => {
                 </div>
 
                 {/* CARD BODY */}
-               <div className="p-4">
+                <div className="p-4">
 
                   {/* CATEGORY */}
                   <p className="text-xs font-bold text-gray-500 uppercase mb-1">

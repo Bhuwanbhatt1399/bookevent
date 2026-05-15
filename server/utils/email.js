@@ -1,28 +1,20 @@
-
-import nodemailer from 'nodemailer'
+import SibApiV3Sdk from 'sib-api-v3-sdk';
 import dotenv from "dotenv";
+
 dotenv.config();
 
-async function createTransporter() {
+const client = SibApiV3Sdk.ApiClient.instance;
 
-    return nodemailer.createTransport({
+const apiKey = client.authentications['api-key'];
 
-        host: "smtp-relay.brevo.com",
-        port: 587,
-        secure: false,
+apiKey.apiKey = process.env.BREVO_API_KEY;
 
-        auth: {
-            user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASS,
-        },
-        connectionTimeout: 30000, // 30 seconds
-        greetingTimeout: 30000,
-        socketTimeout: 30000,
-    });
-
-}
+const tranEmailApi =
+    new SibApiV3Sdk.TransactionalEmailsApi();
 
 
+
+// BOOKING EMAIL
 
 export const sendBookingEmail = async (
     userName,
@@ -34,27 +26,58 @@ export const sendBookingEmail = async (
     eventDate,
     eventLocation
 ) => {
+
     try {
 
-        const mailOption = {
-            from: `"EventHive" <${process.env.SENDER_EMAIL}>`,
-            to: userEmail,
-            subject: `Booking Confirmed - ${eventTitle}`,
+        const response =
+            await tranEmailApi.sendTransacEmail({
 
-            html: `
-               <h2>Hi ${userName}</h2>
+                sender: {
+                    email: process.env.SENDER_EMAIL,
+                    name: "EventHive"
+                },
+
+                to: [
+                    {
+                        email: userEmail
+                    }
+                ],
+
+                subject: `Booking Confirmed - ${eventTitle}`,
+
+                htmlContent: `
+
+                <h2>Hi ${userName}</h2>
 
                 <p>Your booking has been successfully confirmed.</p>
-                <h3>Event Details:</h3>
-                   <p><strong>Event:</strong> ${eventTitle} </p>
 
-                <p> <strong>Date:</strong> ${eventDate}  </p>
-                <p><strong>Venue:</strong> ${eventLocation}</p>
-               <hr>
-                 <h3>Booking Details:</h3>
-                   <p> <strong>Booking ID:</strong> ${bookingId}</p>
-                <p><strong>Number of Tickets:</strong> ${quantity} </p>
-                  <h4>Ticket IDs:</h4>
+                <h3>Event Details:</h3>
+
+                <p>
+                    <strong>Event:</strong> ${eventTitle}
+                </p>
+
+                <p>
+                    <strong>Date:</strong> ${eventDate}
+                </p>
+
+                <p>
+                    <strong>Venue:</strong> ${eventLocation}
+                </p>
+
+                <hr>
+
+                <h3>Booking Details:</h3>
+
+                <p>
+                    <strong>Booking ID:</strong> ${bookingId}
+                </p>
+
+                <p>
+                    <strong>Number of Tickets:</strong> ${quantity}
+                </p>
+
+                <h4>Ticket IDs:</h4>
 
                 <ul>
                     ${ticketIds.map(id => `<li>${id}</li>`).join("")}
@@ -62,74 +85,109 @@ export const sendBookingEmail = async (
 
                 <br>
 
-                <p>Thank you for choosing Accelevents.</p>
+                <p>Thank you for choosing EventHive.</p>
 
                 <p>
                     Regards,<br>
-                    <strong>Accelevents Team</strong>
+                    <strong>EventHive Team</strong>
                 </p>
-            `
-        };
-        console.log("📩 Sending email to:", userEmail);
+                `
+            });
 
+        console.log("✅ Booking email sent:", response);
 
-        const transporter = await createTransporter();
-        await transporter.verify();
-
-        console.log("SMTP READY");
-
-        const info = await transporter.sendMail(mailOption);
-
-        console.log("MAIL RESPONSE:", info);
-
-        console.log('Email send successfully to', userEmail);
+        return response;
 
     } catch (error) {
 
-        console.error("❌ Email failed:", error.message);
-        throw error;
+        console.error(
+            "❌ Booking Email Error:",
+            error.response?.body || error.message
+        );
 
+        throw error;
     }
 };
+
+
+
+
+// OTP EMAIL
 
 export const sendOtpEmail = async (
     userEmail,
     otp,
     type
 ) => {
-    try {
-        const title = type === 'account_verification' ? 'verify your UtsavBook Account' : 'event booking verification'
-        const msg = type == 'account_verification'
-            ? 'Please use the following OTP to verify your new UtsavBook Account'
-            : 'Please use the following OTP to verify and confirm your event booking';
 
-        const mailOption = {
-            from: `EventHive <${process.env.SENDER_EMAIL}>`,
-            to: userEmail,
-            subject: title,
-            html: `
-            <div style="font-family: Arial, sans-serif; padding: 20px;">
-                    <h2 style="color: #4CAF50;">${title}</h2>
-                    <p>${msg}</p>
-                    <h1 style="background: #f4f4f4; padding: 10px; display: inline-block; letter-spacing: 5px;">${otp}</h1>
-                    <p>This OTP is valid for 5 minutes.</p>
+    try {
+
+        const title =
+            type === 'account_verification'
+                ? 'Verify your EventHive Account'
+                : 'Event Booking Verification';
+
+        const msg =
+            type === 'account_verification'
+                ? 'Please use the following OTP to verify your account.'
+                : 'Please use the following OTP to confirm your booking.';
+
+        const response =
+            await tranEmailApi.sendTransacEmail({
+
+                sender: {
+                    email: process.env.SENDER_EMAIL,
+                    name: "EventHive"
+                },
+
+                to: [
+                    {
+                        email: userEmail
+                    }
+                ],
+
+                subject: title,
+
+                htmlContent: `
+
+                <div style="font-family: Arial, sans-serif; padding: 20px;">
+
+                    <h2 style="color: #4CAF50;">
+                        ${title}
+                    </h2>
+
+                    <p>
+                        ${msg}
+                    </p>
+
+                    <h1 style="
+                        background: #f4f4f4;
+                        padding: 10px;
+                        display: inline-block;
+                        letter-spacing: 5px;
+                    ">
+                        ${otp}
+                    </h1>
+
+                    <p>
+                        This OTP is valid for 5 minutes.
+                    </p>
+
                 </div>
                 `
-        };
+            });
 
-        const transporter = await createTransporter();
+        console.log("✅ OTP Email Sent:", response);
 
-        await transporter.verify();
-
-        console.log("SMTP READY");
-        const info = await transporter.sendMail(mailOption);
-        console.log(process.env.EMAIL_USER);
-        console.log(process.env.EMAIL_PASS);
-        console.log("✅ Email sent:", info.messageId);
-        return info;
+        return response;
 
     } catch (error) {
-        console.error("❌ Nodemailer Error:", error.message);
-        throw error; // Isse controller ko pata chalega ki mail fail hua hai
+
+        console.error(
+            "❌ BREVO API ERROR:",
+            error.response?.body || error.message
+        );
+
+        throw error;
     }
 };
